@@ -1,0 +1,6 @@
+**/report/*.bbl
+**/report/*.aux
+**/report/*.log
+**/report/*.out
+**/report/*.tar.gz
+
