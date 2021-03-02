@@ -5,6 +5,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import json
 
+
 def parseSimRes(res_string):
     soup = BeautifulSoup(res_string, 'html.parser')
     table = soup.find_all('table')[0]
@@ -34,10 +35,10 @@ def parseSimRes(res_string):
         'rps': rps,
         'aps': aps,
         'servers': servers,
-        'theta': theta, 
-        'pps': pps, 
-        'cps': cps, 
-        'd' : delay}
+        'theta': theta,
+        'pps': pps,
+        'cps': cps,
+        'd': delay}
 
 
 def runSimulation(clients, servers, apoints, sciper):
@@ -62,59 +63,101 @@ def runSimulation(clients, servers, apoints, sciper):
     return parseSimRes(sim_res)
 
 
-def PartOne(max_clients, max_aps, max_servers, sciper, repeats = 10):
+def PartOne(max_clients, max_aps, max_servers, sciper, repeats=10):
     """
     Try various values for input variables
     """
-    
+
     # Vary the number of clinets
     sim_results = []
     for clients in range(1, max_clients + 1):
         for aps in range(1, max_aps + 1):
             for servers in range(1, max_servers + 1):
-                print("Performing repeated simulatinos (%d,%d,%d)"%(clients, aps, servers))
-                repeated_sims = [runSimulation(clients, servers, aps, sciper) for r in range(0, repeats)]
+                print("Performing repeated simulatinos (%d,%d,%d)" %
+                      (clients, aps, servers))
+                repeated_sims = [runSimulation(
+                    clients, servers, aps, sciper) for r in range(0, repeats)]
                 sim_results.append(
-                    {'clients' : clients, 
-                    'aps': aps,
-                    'serveers': servers,
-                    'results': repeated_sims}
+                    {'clients': clients,
+                     'aps': aps,
+                     'serveers': servers,
+                     'results': repeated_sims}
                 )
     return {
-        'name' : 'PartOne',
+        'name': 'PartOne',
         'configs': {
             'max_clients': max_clients,
             'max_aps': max_aps,
             'max_servers': max_servers,
             'repeats': repeats,
-            'sciper' : sciper
+            'sciper': sciper
         },
         'results':
             sim_results
     }
 
 
-def PartTwo(max_clinets, sciper, repeats = 10):
-
+def PartTwo(max_clinets, sciper, repeats=10):
     """
         With servers = access points = 1, linearly increase the number of
         clients
     """
     sim_results = []
+
     for clients in range(1, max_clinets + 1):
-        repeated_sims = [runSimulation(clients, 1, 1, sciper) for r in range(0, repeats)]
+        print("Part two tests (%d)" % clients)
+        repeated_sims = [runSimulation(clients, 1, 1, sciper)
+                         for r in range(0, repeats)]
         sim_results.append(
-            {'clients' : clients,
-            'results': repeated_sims
-            }
+            {'clients': clients,
+             'results': repeated_sims
+             }
         )
-    return sim_results
+    return {'name': 'PartTwo',
+            'configs':  {
+                'max_clinets': max_clinets,
+                'sciper': sciper,
+                'repeats': repeats
+            },
+            'results': sim_results
+            }
+
+
+def PartThree(max_clients, max_aps, sciper, repeats=10):
+    """
+
+    """
+    sim_results = []
+    for aps in range(1, max_aps + 1):
+        print("Running part three with %d access points" % aps)
+
+        sim_results.append({
+            'aps': aps,
+            'results':
+            [{
+                'clients': clients,
+                'results': [runSimulation(
+                    clients, 1, aps, sciper) for r in range(0, repeats)]
+            } for clients in range(1, max_clients + 1)]
+        })
+    
+    return {'name': 'PartTwo',
+            'configs':  {
+                'max_clinets': max_clients,
+                'max_aps' : max_aps,
+                'sciper': sciper,
+                'repeats': repeats
+            },
+            'results': sim_results
+            }
+
 
 def dumpDict(my_dict, file_name):
     with open(file_name, 'w') as fp:
         pretty_dict = json.dumps(my_dict, indent=4)
         fp.write(pretty_dict)
-        
+
+
 if __name__ == "__main__":
 
     sciper = 273472
@@ -124,13 +167,16 @@ if __name__ == "__main__":
     """
     part_one_results = PartOne(4, 4, 4, sciper, repeats)
     dumpDict(part_one_results, '../data/part_one.json', )
-    
 
     """
     Run part two, keep AP=S=1 and change C
 
     """
     part_two_results = PartTwo(20, sciper, repeats)
-    dumpDict(part_two_results, '../data/part_one.json')
+    dumpDict(part_two_results, '../data/part_two.json')
 
-    
+    """
+    Run part three, run part 2 with 2 access points
+    """
+    part_three_results = PartThree(20, 3, sciper, 10)
+    dumpDict(part_three_results, '../data/part_three.json')
