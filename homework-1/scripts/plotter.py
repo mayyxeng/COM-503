@@ -56,6 +56,7 @@ def plotPartOne(data_file):
       __inner_plot__(axs[1][1], x, delay, colors[x - 1], 'delay')
 
       x += 1
+    
     def setTicks(ax):
       ax.set_xticks(range(1, len(xtick_labesls) + 1))
       ax.set_xticklabels(xtick_labesls, rotation=90, fontsize='xx-small')
@@ -73,6 +74,60 @@ def plotPartOne(data_file):
     fig.savefig('../data/part_one.pdf')
     plt.show()
 
+def plotPartTwo(data_file):
+
+  with open(data_file, 'r') as fp:
+    data = json.load(fp)
+    max_clients = data['configs']['max_clinets']
+    
+    theta = {'median': [], 'err_low': [], 'err_high': []}
+    pps = {'median': [], 'err_low': [], 'err_high': []}
+    cps = {'median': [], 'err_low': [], 'err_high': []}
+    delay = {'median': [], 'err_low': [], 'err_high': []}
+    clients = []
+    for result in data['results']:
+
+      clients.append(result['clients'])
+      repeated_experiments = result['results']
+      def appendStats(experiments, name, storage):
+        values = [expr[name] for expr in experiments]
+        median = np.median(values)
+        qtile_90 = np.quantile(values, 0.9)
+        qtile_10 = np.quantile(values, 0.1)
+        err_high = qtile_90 - median
+        err_low = median - qtile_10
+        storage['err_low'].append(err_low)
+        storage['median'].append(median)
+        storage['err_high'].append(err_high)
+
+      appendStats(repeated_experiments, 'theta', theta)
+      appendStats(repeated_experiments, 'pps', pps)
+      appendStats(repeated_experiments, 'cps', cps)
+      appendStats(repeated_experiments, 'd', delay)
+    
+    fig, axs = plt.subplots(2, 2)
+    
+    
+    def __inner_plot__(ax, storage, label):
+      ax.errorbar(clients, storage['median'], marker='o', yerr=(storage['err_low'], storage['err_high']), capsize=3.5, color='forestgreen')
+      ax.set_ylabel(label)
+      ax.grid(True)
+    __inner_plot__(axs[0][0], theta, r'$\theta$')
+    __inner_plot__(axs[0][1], pps, 'pps')
+    __inner_plot__(axs[1][0], cps, 'cps')
+    __inner_plot__(axs[1][1], delay, 'delay')
+
+
+    fig.set_size_inches((12.80, 7.68 ))
+    fig.tight_layout()
+    
+    fig.savefig('../data/part_two.pdf')
+    plt.show()
+
+
+      
+
+
 
 if __name__ == "__main__":
 
@@ -81,4 +136,5 @@ if __name__ == "__main__":
           'size' : 18}
   matplotlib.rc('font', **font)
 
-  plotPartOne("../data/part_one.json")
+  # plotPartOne("../data/part_one.json")
+  plotPartTwo("../data/part_two.json")

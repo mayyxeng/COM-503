@@ -115,7 +115,7 @@ def PartTwo(max_clinets, sciper, repeats=10):
         )
     return {'name': 'PartTwo',
             'configs':  {
-                'max_clinets': max_clinets,
+                'max_clients': max_clinets,
                 'sciper': sciper,
                 'repeats': repeats
             },
