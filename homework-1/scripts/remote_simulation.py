@@ -80,11 +80,11 @@ def PartOne(max_clients, max_aps, max_servers, sciper, repeats=10):
                 sim_results.append(
                     {'clients': clients,
                      'aps': aps,
-                     'serveers': servers,
+                     'servers': servers,
                      'results': repeated_sims}
                 )
     return {
-        'name': 'PartOne',
+        'name': 'PartThree',
         'configs': {
             'max_clients': max_clients,
             'max_aps': max_aps,
@@ -168,15 +168,15 @@ if __name__ == "__main__":
     part_one_results = PartOne(4, 4, 4, sciper, repeats)
     dumpDict(part_one_results, '../data/part_one.json', )
 
-    """
-    Run part two, keep AP=S=1 and change C
+    # """
+    # Run part two, keep AP=S=1 and change C
 
-    """
-    part_two_results = PartTwo(20, sciper, repeats)
-    dumpDict(part_two_results, '../data/part_two.json')
+    # """
+    # part_two_results = PartTwo(20, sciper, repeats)
+    # dumpDict(part_two_results, '../data/part_two.json')
 
-    """
-    Run part three, run part 2 with 2 access points
-    """
-    part_three_results = PartThree(20, 3, sciper, 10)
-    dumpDict(part_three_results, '../data/part_three.json')
+    # """
+    # Run part three, run part 2 with 2 access points
+    # """
+    # part_three_results = PartThree(20, 3, sciper, 10)
+    # dumpDict(part_three_results, '../data/part_three.json')
