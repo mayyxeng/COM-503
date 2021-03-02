@@ -123,7 +123,7 @@ if __name__ == "__main__":
     Run part one, repeatedly try out different configurations
     """
     part_one_results = PartOne(4, 4, 4, sciper, repeats)
-    dumpDict(part_one_results)
+    dumpDict(part_one_results, '../data/part_one.json', )
     
 
     """
@@ -131,6 +131,6 @@ if __name__ == "__main__":
 
     """
     part_two_results = PartTwo(20, sciper, repeats)
-    dumpDict(part_two_results)
-    
+    dumpDict(part_two_results, '../data/part_one.json')
+
     
