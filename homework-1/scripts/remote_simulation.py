@@ -97,14 +97,14 @@ def PartOne(max_clients, max_aps, max_servers, sciper, repeats=10):
     }
 
 
-def PartTwo(max_clinets, sciper, repeats=10):
+def PartTwo(max_clinets, sciper, repeats=10, steps=10):
     """
         With servers = access points = 1, linearly increase the number of
         clients
     """
     sim_results = []
 
-    for clients in range(1, max_clinets + 1):
+    for clients in range(steps, max_clinets + 1, steps):
         print("Part two tests (%d)" % clients)
         repeated_sims = [runSimulation(clients, 1, 1, sciper)
                          for r in range(0, repeats)]
@@ -123,7 +123,7 @@ def PartTwo(max_clinets, sciper, repeats=10):
             }
 
 
-def PartThree(max_clients, max_aps, sciper, repeats=10):
+def PartThree(max_clients, max_aps, sciper, repeats=10, steps=10):
     """
 
     """
@@ -138,13 +138,42 @@ def PartThree(max_clients, max_aps, sciper, repeats=10):
                 'clients': clients,
                 'results': [runSimulation(
                     clients, 1, aps, sciper) for r in range(0, repeats)]
-            } for clients in range(1, max_clients + 1)]
+            } for clients in range(steps, max_clients + 1, steps)]
         })
-    
+
     return {'name': 'PartTwo',
             'configs':  {
                 'max_clinets': max_clients,
-                'max_aps' : max_aps,
+                'max_aps': max_aps,
+                'sciper': sciper,
+                'repeats': repeats
+            },
+            'results': sim_results
+            }
+
+
+def PartFour(max_clients, max_servers, sciper, repeats=10, steps=10):
+    """
+
+    """
+    sim_results = []
+    for servers in range(1, max_servers + 1):
+        print("Running part four with %d servers" % servers)
+
+        sim_results.append({
+            'servers': servers,
+            'results':
+            [{
+                'clients': clients,
+                'results': [runSimulation(
+                    clients, servers, 1, sciper) for r in range(0, repeats)]
+            } for clients in range(steps, max_clients + 1, steps)]
+        })
+
+    return {'name': 'PartTwo',
+            'configs':  {
+                'max_clinets': max_clients,
+                'max_servers': servers,
                 'sciper': sciper,
                 'repeats': repeats
             },
@@ -162,21 +191,30 @@ if __name__ == "__main__":
 
     sciper = 273472
     repeats = 10
+    steps = 10
+    max_clients = 1000
+    # """
+    # Run part one, repeatedly try out different configurations
+    # """
+    # part_one_results = PartOne(4, 4, 4, sciper, repeats)
+    # dumpDict(part_one_results, '../data/part_one.json', )
+
     """
-    Run part one, repeatedly try out different configurations
+    Run part two, keep AP=S=1 and change C
+
     """
-    part_one_results = PartOne(4, 4, 4, sciper, repeats)
-    dumpDict(part_one_results, '../data/part_one.json', )
+    part_two_results = PartTwo(max_clients, sciper, repeats, steps)
+    dumpDict(part_two_results, '../data/part_two.json')
 
-    # """
-    # Run part two, keep AP=S=1 and change C
+    """
+    Run part three, run part 2 with 2 access points
+    """
+    part_three_results = PartThree(max_clients, 4, sciper, repeats, steps)
+    dumpDict(part_three_results, '../data/part_three.json')
 
-    # """
-    # part_two_results = PartTwo(20, sciper, repeats)
-    # dumpDict(part_two_results, '../data/part_two.json')
 
-    # """
-    # Run part three, run part 2 with 2 access points
-    # """
-    # part_three_results = PartThree(20, 3, sciper, 10)
-    # dumpDict(part_three_results, '../data/part_three.json')
+    """
+    Run part four
+    """
+    part_four_results = PartFour(max_clients, 4, sciper, repeats, steps)
+    dumpDict(part_four_results, '../data/part_four.json')
