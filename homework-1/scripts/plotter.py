@@ -127,7 +127,7 @@ def plotPartTwo(data_file):
         plt.show()
 
 
-def plotPartThree(data_file):
+def plotPartThree(data_file, output):
 
     with open(data_file, 'r') as fp:
         data = json.load(fp)
@@ -138,14 +138,14 @@ def plotPartThree(data_file):
         for c, results in zip(colors, data['results']):
             plotWithErrBars(
                 axs, results['results'], global_label='aps = ' + str(results['aps']), color=c)
-        axs[1][0].legend()
+        axs[1][0].legend(fontsize='xx-small')
         fig.set_size_inches((12.80, 7.68))
         fig.tight_layout()
 
-        fig.savefig('../data/part_three.pdf')
+        fig.savefig(output)
         plt.show()
 
-def plotPartFour(data_file):
+def plotPartFour(data_file, output):
 
     with open(data_file, 'r') as fp:
         data = json.load(fp)
@@ -156,11 +156,11 @@ def plotPartFour(data_file):
         for c, results in zip(colors, data['results']):
             plotWithErrBars(
                 axs, results['results'], global_label='servers = ' + str(results['servers']), color=c)
-        axs[1][0].legend()
+        axs[1][0].legend(fontsize='xx-small')
         fig.set_size_inches((12.80, 7.68))
         fig.tight_layout()
 
-        fig.savefig('../data/part_four.pdf')
+        fig.savefig(output)
         plt.show()
 
 
@@ -173,5 +173,9 @@ if __name__ == "__main__":
 
     # plotPartOne("../data/part_one.json")
     # plotPartTwo("../data/part_two.json")
-    # plotPartThree("../data/part_three.json")
-    plotPartFour("../data/part_four.json")
+    # plotPartThree("../data/part_three.json", "../data/part_three.pdf")
+    # plotPartFour("../data/part_four.json", '../data/part_four.pdf')
+    # plotPartFour("../data/part_five.json", '../data/part_five.pdf')
+    # plotPartFour("../data/part_six.json", '../data/part_six.pdf')
+    # plotPartFour("../data/part_seven.json", '../data/part_seven.pdf')
+    plotPartThree("../data/part_eight.json", '../data/part_eight.pdf')

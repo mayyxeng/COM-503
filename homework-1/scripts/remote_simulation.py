@@ -123,7 +123,7 @@ def PartTwo(max_clinets, sciper, repeats=10, steps=10):
             }
 
 
-def PartThree(max_clients, max_aps, sciper, repeats=10, steps=10):
+def PartThree(max_clients, max_aps, servers, sciper, repeats=10, steps=10):
     """
 
     """
@@ -137,7 +137,7 @@ def PartThree(max_clients, max_aps, sciper, repeats=10, steps=10):
             [{
                 'clients': clients,
                 'results': [runSimulation(
-                    clients, 1, aps, sciper) for r in range(0, repeats)]
+                    clients, servers, aps, sciper) for r in range(0, repeats)]
             } for clients in range(steps, max_clients + 1, steps)]
         })
 
@@ -152,7 +152,7 @@ def PartThree(max_clients, max_aps, sciper, repeats=10, steps=10):
             }
 
 
-def PartFour(max_clients, max_servers, sciper, repeats=10, steps=10):
+def PartFour(max_clients, max_servers, aps, sciper, repeats=10, steps=10):
     """
 
     """
@@ -166,7 +166,7 @@ def PartFour(max_clients, max_servers, sciper, repeats=10, steps=10):
             [{
                 'clients': clients,
                 'results': [runSimulation(
-                    clients, servers, 1, sciper) for r in range(0, repeats)]
+                    clients, servers, aps, sciper) for r in range(0, repeats)]
             } for clients in range(steps, max_clients + 1, steps)]
         })
 
@@ -180,7 +180,7 @@ def PartFour(max_clients, max_servers, sciper, repeats=10, steps=10):
             'results': sim_results
             }
 
-
+  
 def dumpDict(my_dict, file_name):
     with open(file_name, 'w') as fp:
         pretty_dict = json.dumps(my_dict, indent=4)
@@ -199,22 +199,46 @@ if __name__ == "__main__":
     # part_one_results = PartOne(4, 4, 4, sciper, repeats)
     # dumpDict(part_one_results, '../data/part_one.json', )
 
-    """
-    Run part two, keep AP=S=1 and change C
+    # """
+    # Run part two, keep AP=S=1 and change C
+
+    # """
+    # part_two_results = PartTwo(max_clients, sciper, repeats, steps)
+    # dumpDict(part_two_results, '../data/part_two.json')
+
+    # """
+    # Run part three, run part 2 with 2 access points
+    # """
+    # part_three_results = PartThree(max_clients, 4, 1, sciper, repeats, steps)
+    # dumpDict(part_three_results, '../data/part_three.json')
+
+
+    # """
+    # Run part four
+    # """
+    # part_four_results = PartFour(max_clients, 4, 1, sciper, repeats, steps)
+    # dumpDict(part_four_results, '../data/part_four.json')
+
+    # """
+    # Run part five
+    # """
+    # part_four_results = PartFour(max_clients, 4, 2, sciper, repeats, steps)
+    # dumpDict(part_four_results, '../data/part_five.json')
+
+    # """
+    # Run part six
+    # """
+    # part_four_results = PartFour(max_clients, 4, 3, sciper, repeats, steps)
+    # dumpDict(part_four_results, '../data/part_six.json')
+
+    # """
+    # Run part seven
+    # """
+    # part_four_results = PartFour(max_clients, 10, 10, sciper, repeats, steps * 2)
+    # dumpDict(part_four_results, '../data/part_seven.json')
 
     """
-    part_two_results = PartTwo(max_clients, sciper, repeats, steps)
-    dumpDict(part_two_results, '../data/part_two.json')
-
+    Run part eight
     """
-    Run part three, run part 2 with 2 access points
-    """
-    part_three_results = PartThree(max_clients, 4, sciper, repeats, steps)
-    dumpDict(part_three_results, '../data/part_three.json')
-
-
-    """
-    Run part four
-    """
-    part_four_results = PartFour(max_clients, 4, sciper, repeats, steps)
-    dumpDict(part_four_results, '../data/part_four.json')
+    part_four_results = PartThree(max_clients, 10, 4, sciper, repeats, steps * 2)
+    dumpDict(part_four_results, '../data/part_eight.json')
