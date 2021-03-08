@@ -4,6 +4,7 @@ from io import BytesIO
 import pandas as pd
 from bs4 import BeautifulSoup
 import json
+import math
 
 
 def parseSimRes(res_string):
@@ -180,6 +181,33 @@ def PartFour(max_clients, max_servers, aps, sciper, repeats=10, steps=10):
             'results': sim_results
             }
 
+def PartFive(max_clinets, sciper, repeats=10, steps=10):
+    """
+        Linearly increase the number of clients.
+        Vary servers and APs based on engineering rule. 
+    """
+    sim_results = []
+    ap_load = 72
+    server_load = 250
+    for clients in range(steps, max_clinets + 1, steps):
+        num_servers = min(math.ceil(clients/server_load),10)
+        num_aps = min(math.ceil(clients/ap_load),10)
+        print("Part five tests %d clients, %d APs, %d servers" % (clients, num_aps, num_servers))
+        repeated_sims = [runSimulation(clients, num_servers, num_aps, sciper)
+                         for r in range(0, repeats)]
+        sim_results.append(
+            {'clients': clients,
+             'results': repeated_sims
+             }
+        )
+    return {'name': 'PartTwo',
+            'configs':  {
+                'max_clients': max_clinets,
+                'sciper': sciper,
+                'repeats': repeats
+            },
+            'results': sim_results
+            }
   
 def dumpDict(my_dict, file_name):
     with open(file_name, 'w') as fp:
@@ -207,38 +235,27 @@ if __name__ == "__main__":
     # dumpDict(part_two_results, '../data/part_two.json')
 
     # """
-    # Run part three, run part 2 with 2 access points
+    # Run part three. 1 server. 1-4 APs
     # """
     # part_three_results = PartThree(max_clients, 4, 1, sciper, repeats, steps)
     # dumpDict(part_three_results, '../data/part_three.json')
 
 
     # """
-    # Run part four
+    # Run part four (a). 10 servers, 1-10 APs
     # """
-    # part_four_results = PartFour(max_clients, 4, 1, sciper, repeats, steps)
+    # part_four_results = PartThree(max_clients, 10, 10, sciper, repeats, steps)
     # dumpDict(part_four_results, '../data/part_four.json')
 
     # """
-    # Run part five
+    # Run part four (b). 10 APs, 1-10 servers.
     # """
-    # part_four_results = PartFour(max_clients, 4, 2, sciper, repeats, steps)
+    # part_four_results = PartFour(max_clients, 10, 10, sciper, repeats, steps)
     # dumpDict(part_four_results, '../data/part_five.json')
 
-    # """
-    # Run part six
-    # """
-    # part_four_results = PartFour(max_clients, 4, 3, sciper, repeats, steps)
-    # dumpDict(part_four_results, '../data/part_six.json')
-
-    # """
-    # Run part seven
-    # """
-    # part_four_results = PartFour(max_clients, 10, 10, sciper, repeats, steps * 2)
-    # dumpDict(part_four_results, '../data/part_seven.json')
+    """
+    Run part five, change C and vary AP,S based on engineering rule
 
     """
-    Run part eight
-    """
-    part_four_results = PartThree(max_clients, 10, 4, sciper, repeats, steps * 2)
-    dumpDict(part_four_results, '../data/part_eight.json')
+    part_two_results = PartFive(max_clients, sciper, repeats, steps)
+    dumpDict(part_two_results, '../data/part_six.json')

@@ -93,6 +93,14 @@ def plotWithErrBars(axs, data, global_label, color):
             storage['err_low'].append(err_low)
             storage['median'].append(median)
             storage['err_high'].append(err_high)
+            if(name == 'd' and qtile_90 > 1000):
+                load = experiments[0]['rps']
+                servers = experiments[0]['servers']
+                print("Delay bounded for %d servers for %d load" %(servers, load))  
+            # if(name == 'cps' and qtile_90 > 0.99):
+            #     load = experiments[0]['rps']
+            #     aps = experiments[0]['aps']
+            #     print("Collisions bounded for %d aps for %d load" %(aps, load))  
 
         appendStats(repeated_experiments, 'theta', theta)
         appendStats(repeated_experiments, 'pps', pps)
@@ -103,6 +111,7 @@ def plotWithErrBars(axs, data, global_label, color):
         ax.errorbar(clients, storage['median'], marker='o', yerr=(
             storage['err_low'], storage['err_high']), capsize=3.5, color=color, label=global_label)
         ax.set_ylabel(label)
+        ax.set_xlabel("Load (rps)")
         ax.grid(True)
     __inner_plot__(axs[0][0], theta, r'$\theta$')
     __inner_plot__(axs[0][1], pps, 'pps')
@@ -110,7 +119,7 @@ def plotWithErrBars(axs, data, global_label, color):
     __inner_plot__(axs[1][1], delay, 'delay')
 
 
-def plotPartTwo(data_file):
+def plotPartTwo(data_file, output):
 
     with open(data_file, 'r') as fp:
         data = json.load(fp)
@@ -123,7 +132,7 @@ def plotPartTwo(data_file):
         fig.set_size_inches((12.80, 7.68))
         fig.tight_layout()
 
-        fig.savefig('../data/part_two.pdf')
+        fig.savefig(output)
         plt.show()
 
 
@@ -172,10 +181,8 @@ if __name__ == "__main__":
     matplotlib.rc('font', **font)
 
     # plotPartOne("../data/part_one.json")
-    # plotPartTwo("../data/part_two.json")
+    # plotPartTwo("../data/part_two.json", '../data/part_two.pdf')
     # plotPartThree("../data/part_three.json", "../data/part_three.pdf")
-    # plotPartFour("../data/part_four.json", '../data/part_four.pdf')
+    # plotPartThree("../data/part_four.json", '../data/part_four.pdf')
     # plotPartFour("../data/part_five.json", '../data/part_five.pdf')
-    # plotPartFour("../data/part_six.json", '../data/part_six.pdf')
-    # plotPartFour("../data/part_seven.json", '../data/part_seven.pdf')
-    plotPartThree("../data/part_eight.json", '../data/part_eight.pdf')
+    plotPartTwo("../data/part_six.json", '../data/part_six.pdf')
