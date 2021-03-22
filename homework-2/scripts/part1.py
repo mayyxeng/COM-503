@@ -147,7 +147,7 @@ def problem2():
         nu = cfg['params']
         cfg['samples'] = np.random.standard_t(nu, 1500)
         probplot(cfg['samples'], plot=axs[i])
-        axs[i].set_title(r'$Student(' + str(mu) + ', ' + str(sigma) + r')$')
+        axs[i].set_title(r'$Student(' + str(nu) + r')$')
       fig.set_size_inches((12.80, 12.80))
       fig.tight_layout()
       fig.savefig('../figures/problem1_student_qqplot.pdf')

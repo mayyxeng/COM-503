@@ -187,7 +187,7 @@ def PartFive(max_clinets, sciper, repeats=10, steps=10):
         Vary servers and APs based on engineering rule. 
     """
     sim_results = []
-    ap_load = 72
+    ap_load = 80
     server_load = 250
     for clients in range(steps, max_clinets + 1, steps):
         num_servers = min(math.ceil(clients/server_load),10)
