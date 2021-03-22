@@ -188,5 +188,5 @@ if __name__ == "__main__":
             'sans-serif': ['Helvetica'],
             'size': 18}
     matplotlib.rc('font', **font)
-
+    problem1()
     problem2()
