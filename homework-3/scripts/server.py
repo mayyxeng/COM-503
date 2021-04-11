@@ -7,6 +7,9 @@ from bisect import bisect_left
 import matplotlib.pyplot as plt
 import matplotlib
 import scipy.stats as stats_utils
+from numpy import abs
+import numpy as np
+import scipy.stats as st
 
 
 class Server:
@@ -138,8 +141,33 @@ class Server:
             (event_time - self.current_time) * \
             self.job_count[job_type]
 
-    def simulate(self, num_req):
+    def simulate(self, num_req, stationary_only=False):
 
+        stationary_time = 0
+        stationary_queue = {
+            job: self.job_count[job]
+            for job in [Server.JobType.TYPE1, Server.JobType.TYPE2]
+        }
+
+        def compute_response_time(job_type):
+            return self.response_counter[job_type] / self.jobs_served[job_type]
+
+        def compute_average_served(job_type):
+            return self.jobs_served[job_type] / (self.current_time - stationary_time)
+
+        def get_queue_metrics():
+            return {
+                # note that N = backlogCoutner / T, but backlogCounter  = responseTimeCounter
+                job: self.response_counter[job] / self.current_time
+                for job in [Server.JobType.TYPE1, Server.JobType.TYPE2]
+            }
+
+        stationary_found = False
+        stationary_counter = 0
+
+        current_queue_meteric = {
+            job: 0 for job in [Server.JobType.TYPE1, Server.JobType.TYPE2]
+        }
         while self.requests_arrived <= num_req:
 
             # get the next event
@@ -200,13 +228,51 @@ class Server:
 
             self.current_time = current_event.time
 
+            new_queue_metrics = get_queue_metrics()
+
+            def metrics_stationary(old, new) -> bool:
+                if old[Server.JobType.TYPE1] == 0 or old[Server.JobType.TYPE2] == 0:
+                    return False
+                err = {
+                    job: abs(old[job] - new[job]) / old[job]
+                    for job in [Server.JobType.TYPE1, Server.JobType.TYPE2]
+                }
+                self.log("Queue metric erros: TYPE1 {:.4f}, TYPE2 {:.4f}"
+                         .format(
+                             err[Server.JobType.TYPE1], err[Server.JobType.TYPE2]
+                         ))
+                return (err[Server.JobType.TYPE1] <= 0.005 and err[Server.JobType.TYPE2] <= 0.005)
+            # Check whether performance metrics are stationary
+            if metrics_stationary(current_queue_meteric, new_queue_metrics):
+                stationary_counter += 1
+
+            if stationary_counter == 10 and stationary_found == False:
+                stationary_found = True
+                stationary_time = current_event.time
+                stationary_queue = {
+                    job: self.response_counter[job]
+                    for job in [Server.JobType.TYPE1, Server.JobType.TYPE2]
+                }
+                self.log("Found stationary region")
+
+            current_queue_meteric = get_queue_metrics()
+
         # Simulation is done, return the average statistics
-        def compute_response_time(job_type):
-            return self.response_counter[job_type] / self.jobs_served[job_type]
-
-        def compute_average_served(job_type):
-            return self.jobs_served[job_type] / self.current_time
-
+        job_queue_metrics = {}
+        if stationary_found == True and stationary_only == True:
+            self.log("Stationary region starts at {:.3f}".format(
+                stationary_time))
+            job_queue_metrics = {
+                job: (self.response_counter[job] - stationary_queue[job]
+                      ) / (self.current_time - stationary_time)
+                for job in [Server.JobType.TYPE1, Server.JobType.TYPE2]
+            }
+        else:
+            self.log("Did not find the stationary region!")
+            job_queue_metrics = {
+                job: self.response_counter[job] / self.current_time
+                for job in [Server.JobType.TYPE1, Server.JobType.TYPE2]
+            }
         job_avg = {
             job: {
                 "response_time":
@@ -214,13 +280,16 @@ class Server:
                 "num_served":
                     self.jobs_served[job],
                 "served_per_ms":
-                    compute_average_served(job)
+                    compute_average_served(job),
+                "average_queue":
+                    job_queue_metrics[job]
             } for job in [Server.JobType.TYPE1, Server.JobType.TYPE2]
         }
 
         return {
             "time": self.current_time,
-            "jobs": job_avg
+            "jobs": job_avg,
+            'stationary': stationary_time if stationary_found == True and stationary_only == True else 0
         }
 
     def plotRequests(self, file_name):
@@ -267,21 +336,25 @@ def printSimRes(res):
     print("""
 Total time : {time:.3f} ms,
 TYPE1:
-    response time: {t1_rsp: .3f} ms
-    served:        {t1_srvd: .3f} 
-    service rate:  {t1_rate: .3f} jobs/ms
+    response time:  {t1_rsp: .3f} ms
+    served       :  {t1_srvd: .3f} 
+    service rate :  {t1_rate: .3f} jobs/ms
+    N            :  {t1_q: .3f}
 TYPE2:
-    response time: {t2_rsp: .3f} ms
-    served:        {t2_srvd: .3f} 
-    service rate:  {t2_rate: .3f} jobs/ms
+    response time:  {t2_rsp: .3f} ms
+    served       :  {t2_srvd: .3f} 
+    service rate :  {t2_rate: .3f} jobs/ms
+    N            :  {t2_q: .3f}
 """.format(
         time=res['time'],
         t1_rsp=res['jobs'][Server.JobType.TYPE1]['response_time'],
         t1_srvd=res['jobs'][Server.JobType.TYPE1]['num_served'],
         t1_rate=res['jobs'][Server.JobType.TYPE1]['served_per_ms'],
+        t1_q=res['jobs'][Server.JobType.TYPE1]['average_queue'],
         t2_rsp=res['jobs'][Server.JobType.TYPE2]['response_time'],
         t2_srvd=res['jobs'][Server.JobType.TYPE2]['num_served'],
-        t2_rate=res['jobs'][Server.JobType.TYPE2]['served_per_ms']
+        t2_rate=res['jobs'][Server.JobType.TYPE2]['served_per_ms'],
+        t2_q=res['jobs'][Server.JobType.TYPE2]['average_queue']
 
     ))
 
@@ -299,37 +372,6 @@ def Part1():
 
 def Part2():
     max_req = 10000
-
-    class MGI1Model:
-
-        def __init__(self, rate):
-
-            s_mean = stats_utils.lognorm.mean(s=1, scale=exp(1))
-            s_var = stats_utils.lognorm.var(s=1, scale=exp(1))
-            k = 1/2 * (1 + s_var / (s_mean * s_mean))
-            util = rate * s_mean
-
-            self.N = (util * util) * k / (1.0 - util) + util
-            self.N_w = (util * util) * k / (1.0 - util)
-            self.R = s_mean * (1.0 - util * (1.0 - k)) / (1.0 - util)
-            self.W = s_mean * util * k / (1 - util)
-            self.util = util
-
-        def print(self):
-            print("""
-Analytical mode:
-    N   = {N:.3f}
-    N_w = {N_w:.3f}
-    R   = {R:.3f}
-    W   = {W:.3f}
-    rho = {rho:.3f}
-        """.format(
-                N=self.N,
-                N_w=self.N_w,
-                R=self.R,
-                W=self.W,
-                rho=self.util
-            ))
 
     explanation = \
         """
@@ -366,6 +408,87 @@ lambda < min(1 / S1, 1 / S2, 1/(S1 + S2)) = 191.20
                             "part2_queues_{}.pdf".format(rate))
 
 
+def Part3():
+
+    rates = [100, 180]
+    repeats = 30 + 20
+    max_req = 10000
+
+    def analysis(rate, find_stationary):
+
+        results = []
+        for i in range(0, repeats):
+            server = Server(rate, verbose=False)
+
+            res = server.simulate(max_req, stationary_only=find_stationary)
+            # print("Performed simulation with lambda = {:.3f} and stationary = {:.3f}".format(
+            #     rate, res['stationary']))
+
+            results.append(res)
+
+        
+
+        def mean_cf_95(data):
+
+            s_n = st.sem(data)
+            m_n = np.mean(data)
+            eta = 1.96
+            interval = eta * np.sqrt(s_n / len(data))
+            return (m_n, interval)
+
+        def median_cf_95(data):
+
+            num_samples = len(data)
+            if num_samples < 30:
+                raise RuntimeError("Not enough data for median cf!")
+            else:
+                j = int(np.floor(0.5*num_samples - 0.98 * np.sqrt(num_samples)))
+                k = int(np.ceil(0.5*num_samples + 0.98 * np.sqrt(num_samples)) + 1)
+                med = np.median(data)
+                ordered = np.sort(data)
+                return (ordered[j], med, ordered[k])
+
+        def print_cf(data, metric):
+            data_mean, mean_cf = mean_cf_95(data)
+            med_l, data_med, med_h = median_cf_95(data)
+            print(metric + ":")
+            print("\tMean: {:.5f} +/- {:.5f}".format(data_mean, mean_cf))
+            print("\tMedian: {:.5f}, {:.5f}, {:.5f}".format(
+                med_l, data_med, med_h
+            ))
+
+        type1_N = [r['jobs'][Server.JobType.TYPE1]['average_queue']
+                   for r in results]
+        type1_R = [r['jobs'][Server.JobType.TYPE1]['response_time']
+                   for r in results]
+        type1_l = [r['jobs'][Server.JobType.TYPE1]['served_per_ms']
+                   for r in results]
+        type2_N = [r['jobs'][Server.JobType.TYPE2]['average_queue']
+                   for r in results]
+        type2_R = [r['jobs'][Server.JobType.TYPE2]['response_time']
+                   for r in results]
+        type2_l = [r['jobs'][Server.JobType.TYPE2]['served_per_ms']
+                   for r in results]
+        print("TYPE1 job:")
+        print_cf(type1_N, "N")
+        print_cf(type1_R, "R")
+        print_cf(type1_l, "served_per_ms")
+        print("TYPE2 job:")
+        print_cf(type2_N, "N")
+        print_cf(type2_R, "R")
+        print_cf(type2_l, "served_per_ms")
+        
+
+    for rate in rates:
+        print("LAMBDA = {:.3f}".format(rate))
+        print("-----NON-STATIONARY------")
+        analysis(rate, False)
+        print("=========================")
+        print("-------STATIONARY--------")
+        analysis(rate, True)
+        print("=========================")
+
+
 if __name__ == "__main__":
 
     font = {'family': 'sans-serif',
@@ -373,4 +496,5 @@ if __name__ == "__main__":
             'size': 18}
     matplotlib.rc('font', **font)
     # Part1()
-    Part2()
+    # Part2()
+    Part3()
