@@ -259,6 +259,7 @@ class Server:
 
         # Simulation is done, return the average statistics
         job_queue_metrics = {}
+        response_time = {}
         if stationary_found == True and stationary_only == True:
             self.log("Stationary region starts at {:.3f}".format(
                 stationary_time))
@@ -371,7 +372,7 @@ def Part1():
 
 
 def Part2():
-    max_req = 10000
+    max_req = 100000
 
     explanation = \
         """
@@ -411,7 +412,7 @@ lambda < min(1 / S1, 1 / S2, 1/(S1 + S2)) = 191.20
 def Part3():
 
     rates = [100, 180]
-    repeats = 30 + 20
+    repeats = 30 + 30
     max_req = 10000
 
     def analysis(rate, find_stationary):
@@ -477,17 +478,50 @@ def Part3():
         print_cf(type2_N, "N")
         print_cf(type2_R, "R")
         print_cf(type2_l, "served_per_ms")
-        
+
+        return (type1_N, type2_N)
+
 
     for rate in rates:
         print("LAMBDA = {:.3f}".format(rate))
         print("-----NON-STATIONARY------")
-        analysis(rate, False)
+        no_type1_N, no_type2_N = analysis(rate, False)
+
         print("=========================")
         print("-------STATIONARY--------")
-        analysis(rate, True)
+        type1_N, type2_N = analysis(rate, True)
         print("=========================")
 
+        fig, axs = plt.subplots(1, 2)
+        
+        axs[0].boxplot([no_type1_N, type1_N], labels=['non-stationary', 'stationary'], meanline=True)
+        axs[1].boxplot([no_type2_N, type2_N], labels=['non-stationary', 'stationary'], meanline=True)
+        axs[0].set_title(r'$\lambda = {:3.0f}$, type 1'.format(rate))
+        axs[1].set_title(r'$\lambda = {:3.0f}$, type 2'.format(rate))
+
+        fig.set_size_inches((12.80, 7.68))
+        fig.tight_layout()
+        plt.show()
+        fig.savefig('../figures/part3_' + str(rate) + ".pdf")
+
+
+
+
+def Part4():
+
+    def eval_p0(n):
+        return np.log(2 / 0.1) * 1/n
+    
+    fig, ax = plt.subplots()
+
+    x = [i + 1 for i in range(0, 350)]
+    y = [eval_p0(_x) for _x in x]
+
+    ax.plot(x, y)
+    ax.set_yscale('log')
+    ax.hlines(0.01, 0, 351)
+    ax.grid(True)
+    plt.show()
 
 if __name__ == "__main__":
 
@@ -498,3 +532,4 @@ if __name__ == "__main__":
     # Part1()
     # Part2()
     Part3()
+    
