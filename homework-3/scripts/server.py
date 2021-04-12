@@ -241,7 +241,7 @@ class Server:
                          .format(
                              err[Server.JobType.TYPE1], err[Server.JobType.TYPE2]
                          ))
-                return (err[Server.JobType.TYPE1] <= 0.005 and err[Server.JobType.TYPE2] <= 0.005)
+                return (err[Server.JobType.TYPE1] <= 0.05 and err[Server.JobType.TYPE2] <= 0.05)
             # Check whether performance metrics are stationary
             if metrics_stationary(current_queue_meteric, new_queue_metrics):
                 stationary_counter += 1
@@ -301,7 +301,6 @@ class Server:
                 label='requests arrived')
         ax.plot(self.stats.time_point, self.stats.requests_served,
                 label='requests served')
-
         ax.set_ylabel('Number of requests (arrived/served)')
         ax.set_xlabel('Time (ms)')
 
@@ -312,6 +311,8 @@ class Server:
         fig.tight_layout()
         plt.show()
         fig.savefig('../figures/' + file_name)
+
+    
 
     def plotJobQueue(self, title, file_name):
 
