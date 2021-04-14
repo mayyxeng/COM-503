@@ -1,0 +1,40 @@
+\documentclass{hotnets2020}
+
+\usepackage{times}  
+\usepackage{hyperref}
+\usepackage{cite}
+
+\hypersetup{pdfstartview=FitH,pdfpagelayout=SinglePage}
+
+\begin{document}
+
+% \conferenceinfo{HotNets 2020} {}
+% \CopyrightYear{2020}
+% \crdata{X}
+% \date{}
+
+%%%%%%%%%%%% THIS IS WHERE WE PUT IN THE TITLE AND AUTHORS %%%%%%%%%%%%
+
+\title{Can we quantify bottlenecks in Symbolic Execution?}
+
+\author{Mahyar Emami, Rishabh Iyer}
+
+\maketitle
+
+%%%%%%%%%%%%%  ABSTRACT GOES HERE %%%%%%%%%%%%%%
+\begin{abstract}
+
+Symbolic execution (SE) is an automated program analysis technique that has widespread use in tools for bug finding~\cite{klee,exe,sage}, formal verification ~\cite{hyperkernel,vigor,jitterbug} and performance analysis~\cite{castan,bolt,violet}. However, despite its widespread use, the performance of symbolic execution ( i.e., how fast it can analyze the target program ) remains a concern with the current consensus being that it can never really scale to exhaustively analyze codebases with millions of lines of code ~\cite{se_3decades}. Despite this concern, there exists no concrete understanding of the major bottlenecks in SE and how each of them affect  performance. We believe that this is due to the fact that SE performance is a complex function of the specificities of the target program and the particular implementation of the SE tool. In this work, we aim to shed light on this complex function and make quantitative statements about existing bottlenecks in SE performance, in order to enable targetted optimizations that can allow SE to scale to larger codebases.
+
+Concretely, the performance metric is the time taken by the SE tool to achieve a certain code coverage on the target program. The factors that affect performance may be one or more of the structure of the target program, its instruction mix, the amount of state stored, the type of SMT queries generated when analyzing it, the implementation of the SE tool, etc. We expect identifying the precise dependence of SE performance on each of these factors to be a complex undertaking.
+
+\end{abstract}
+
+\newpage
+\bibliographystyle{abbrv} 
+\begin{small}
+\bibliography{hotnets2020}
+\end{small}
+
+\end{document}
+

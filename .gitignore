@@ -1,9 +1,9 @@
 # Latex build files
-**/report/*.bbl
-**/report/*.aux
-**/report/*.log
-**/report/*.out
-**/report/*.blg
-**/report/*.gz
+*.bbl
+*.aux
+*.log
+*.out
+*.blg
+*.gz
 
 
